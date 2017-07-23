@@ -15,7 +15,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-class MockedCall<T> implements MockableCall<T> {
+class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
 
     private Type type;
 
@@ -70,7 +70,7 @@ class MockedCall<T> implements MockableCall<T> {
     }
 
     @Override
-    public MockableCall<T> additionalMethod() {
+    public com.gabrielsamojlo.offit.Call<T> additionalMethod() {
         return this;
     }
 

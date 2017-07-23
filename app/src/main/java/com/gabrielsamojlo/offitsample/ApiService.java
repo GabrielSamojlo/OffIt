@@ -1,7 +1,8 @@
 package com.gabrielsamojlo.offitsample;
 
+import com.gabrielsamojlo.offit.Call;
 import com.gabrielsamojlo.offit.Mockable;
-import com.gabrielsamojlo.offit.MockableCall;
+
 
 import java.util.List;
 
@@ -11,6 +12,6 @@ public interface ApiService {
 
     @GET("/posts")
     @Mockable(responseCode = 200, jsonPath = "get_posts.json", responseTime = 3500)
-    MockableCall<List<Post>> getPosts();
+    Call<List<Post>> getPosts();
 
 }

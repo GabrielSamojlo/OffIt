@@ -8,7 +8,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-class ExecutorCallbackCall<T> implements MockableCall<T> {
+class ExecutorCallbackCall<T> implements com.gabrielsamojlo.offit.Call<T> {
 
     final Executor callbackExecutor;
     final Call<T> delegate;
@@ -70,7 +70,7 @@ class ExecutorCallbackCall<T> implements MockableCall<T> {
     }
 
     @Override
-    public MockableCall<T> additionalMethod() {
+    public com.gabrielsamojlo.offit.Call<T> additionalMethod() {
         // no-op here
         return this;
     }
