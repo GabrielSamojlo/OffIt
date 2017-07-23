@@ -7,6 +7,7 @@ import android.util.Log;
 import com.gabrielsamojlo.offit.Call;
 import com.gabrielsamojlo.offit.Callback;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -22,11 +23,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mApiService = RestClient.getMockApiService(this);
-        Call<List<Post>> call = mApiService.getPosts();
+        Call<List<Post>> call = mApiService.getPosts().withResponseTime(100);
         call.enqueue(new Callback<List<Post>>() {
             @Override
             public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
-                Log.e("size", String.valueOf(response.body().size()));
+                Log.e("responseCode", String.valueOf(response.code()));
+                Log.e("isSuccessfull", String.valueOf(response.isSuccessful()));
+
+                if (response.isSuccessful()) {
+                    Log.e("size", String.valueOf(response.body().size()));
+                } else {
+                    try {
+                        Log.e("error", response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             @Override
@@ -34,5 +46,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
     }
 }

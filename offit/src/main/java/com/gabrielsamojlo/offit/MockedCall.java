@@ -10,7 +10,9 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
+import okhttp3.MediaType;
 import okhttp3.Request;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -70,7 +72,14 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
     }
 
     @Override
-    public com.gabrielsamojlo.offit.Call<T> additionalMethod() {
+    public com.gabrielsamojlo.offit.Call<T> withResponseTime(int responseTimeInMillis) {
+        responseTime = responseTimeInMillis;
+        return this;
+    }
+
+    @Override
+    public com.gabrielsamojlo.offit.Call<T> withResponseCode(int responseCode) {
+        this.responseCode = responseCode;
         return this;
     }
 
@@ -90,7 +99,11 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                callback.onResponse(instance, Response.success(gson.fromJson(json, type)));
+                if (responseCode >= 200 && responseCode < 300) {
+                    callback.onResponse(instance, Response.success(gson.fromJson(json, type)));
+                } else {
+                    callback.onResponse(instance, Response.error(responseCode, ResponseBody.create(MediaType.parse("application/json"), json)));
+                }
             }
         }, responseTime);
     }

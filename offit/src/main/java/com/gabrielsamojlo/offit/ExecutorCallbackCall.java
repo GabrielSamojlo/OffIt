@@ -70,7 +70,13 @@ class ExecutorCallbackCall<T> implements com.gabrielsamojlo.offit.Call<T> {
     }
 
     @Override
-    public com.gabrielsamojlo.offit.Call<T> additionalMethod() {
+    public com.gabrielsamojlo.offit.Call<T> withResponseTime(int responseTimeInMillis) {
+        // no-op here
+        return this;
+    }
+
+    @Override
+    public com.gabrielsamojlo.offit.Call<T> withResponseCode(int responseCode) {
         // no-op here
         return this;
     }
