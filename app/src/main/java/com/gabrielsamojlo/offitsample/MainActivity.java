@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mApiService = RestClient.getMockApiService(this);
-        Call<List<Post>> call = mApiService.getPosts().withResponseTime(100);
+        Call<List<Post>> call = mApiService.getPosts().withTag("no_posts");
         call.enqueue(new Callback<List<Post>>() {
             @Override
             public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {

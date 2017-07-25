@@ -2,12 +2,12 @@ package com.gabrielsamojlo.offit;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 import okhttp3.MediaType;
@@ -23,7 +23,9 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
 
     private Context context;
 
-    private Annotation annotation;
+    private Mockable[] mockableAnnotations;
+    private Mockable selectedAnnotation;
+
     private MockedCall<T> instance;
     private Call<T> call;
 
@@ -31,22 +33,41 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
     private int responseCode = 200;
     private int responseTime = 0;
 
-    MockedCall(Type type, Call<T> call, Context context, Annotation annotation) {
+    MockedCall(Type type, Call<T> call, Context context, Mockable[] mockableAnnotations) {
         this.type = type;
         this.context = context;
         this.call = call;
-        this.annotation = annotation;
+        this.mockableAnnotations = mockableAnnotations;
         this.instance = this;
 
+        // getting default values to be sure when no tag is specified
+        selectedAnnotation = getDefaultAnnotation();
         setupValuesFromAnnotation();
     }
 
-    private void setupValuesFromAnnotation() {
-        Mockable mockableAnnotation = (Mockable) annotation;
+    private Mockable getDefaultAnnotation() {
+        if (mockableAnnotations != null && mockableAnnotations.length > 0) {
+            return mockableAnnotations[0];
+        }
 
-        pathToJson = mockableAnnotation.jsonPath();
-        responseCode = mockableAnnotation.responseCode();
-        responseTime = mockableAnnotation.responseTime();
+        else throw new NullPointerException("Mockable or Mockables annotation not found! (null or empty list)");
+    }
+
+    private Mockable getAnnotationByTag(String tag) {
+        for (Mockable mockable : mockableAnnotations) {
+            if (mockable.tag().equals(tag)) {
+                return mockable;
+            }
+        }
+
+        Log.e("OffIt", "Annotation with tag " + tag + " was not found, using default one");
+        return getDefaultAnnotation();
+    }
+
+    private void setupValuesFromAnnotation() {
+        pathToJson = selectedAnnotation.jsonPath();
+        responseCode = selectedAnnotation.responseCode();
+        responseTime = selectedAnnotation.responseTime();
     }
 
     private String loadJSONFromAsset(String fileName) {
@@ -80,6 +101,14 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
     @Override
     public com.gabrielsamojlo.offit.Call<T> withResponseCode(int responseCode) {
         this.responseCode = responseCode;
+        return this;
+    }
+
+    @Override
+    public com.gabrielsamojlo.offit.Call<T> withTag(String tag) {
+        selectedAnnotation = getAnnotationByTag(tag);
+        setupValuesFromAnnotation();
+
         return this;
     }
 

@@ -43,18 +43,20 @@ class MockableCallAdapterFactory extends CallAdapter.Factory {
 
             private Type type;
 
-            private boolean isAnnotationPresent() {
-                return (getAnnotation() != null);
-            }
-
-            private Annotation getAnnotation() {
+            private Mockable[] getMockableAnnotations() {
                 for (Annotation annotation : annotations) {
-                    if (annotation instanceof Mockable) {
-                        return annotation;
+                    if (annotation instanceof Mockables) {
+                        return ((Mockables) annotation).value();
                     }
                 }
 
-                return null;
+                for (Annotation annotation : annotations) {
+                    if (annotation instanceof Mockable) {
+                        return new Mockable[] {(Mockable) annotation};
+                    }
+                }
+
+                return new Mockable[0];
             }
 
             @Override
@@ -72,11 +74,11 @@ class MockableCallAdapterFactory extends CallAdapter.Factory {
 
             @Override
             public Call<?> adapt(Call<Object> call) {
-                if (isOffItTurnedOn && isAnnotationPresent()) {
-                    return new MockedCall<>(type, call, context, getAnnotation());
-                } else {
-                    return new ExecutorCallbackCall<>(retrofit.callbackExecutor(), call);
+                if (isOffItTurnedOn && getMockableAnnotations() != null && getMockableAnnotations().length > 0) {
+                    return new MockedCall<>(type, call, context, getMockableAnnotations());
                 }
+
+                return new ExecutorCallbackCall<>(retrofit.callbackExecutor(), call);
             }
         };
     }

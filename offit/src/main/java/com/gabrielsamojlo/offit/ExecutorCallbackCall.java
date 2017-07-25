@@ -81,4 +81,10 @@ class ExecutorCallbackCall<T> implements com.gabrielsamojlo.offit.Call<T> {
         return this;
     }
 
+    @Override
+    public com.gabrielsamojlo.offit.Call<T> withTag(String tag) {
+        // no-op here
+        return this;
+    }
+
 }
