@@ -3,6 +3,8 @@ package com.gabrielsamojlo.offitsample;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.gabrielsamojlo.offit.Call;
 import com.gabrielsamojlo.offit.Callback;
@@ -23,7 +25,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mApiService = RestClient.getMockApiService(this);
-        Call<List<Post>> call = mApiService.getPosts().withTag("no_posts");
+
+        Button button = (Button) findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getPosts();
+            }
+        });
+    }
+
+    private void getPosts() {
+        Call<List<Post>> call = mApiService.getPosts();
         call.enqueue(new Callback<List<Post>>() {
             @Override
             public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
@@ -43,9 +56,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<Post>> call, Throwable t) {
-
+                Log.e("error", t.getMessage());
             }
         });
-
     }
 }

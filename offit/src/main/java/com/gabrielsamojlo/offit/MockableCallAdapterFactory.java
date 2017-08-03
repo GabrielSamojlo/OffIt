@@ -18,21 +18,27 @@ class MockableCallAdapterFactory extends CallAdapter.Factory {
     private static MockableCallAdapterFactory sInstance;
     private boolean isOffItTurnedOn;
     private Context context;
+    private NetworkSimulator networkSimulator;
 
-    public static MockableCallAdapterFactory getInstance(Context context, boolean isOffItTurnedOn) {
-        if (sInstance == null || sInstance.isOffItTurnedOn() != isOffItTurnedOn) {
-            sInstance = new MockableCallAdapterFactory(context, isOffItTurnedOn);
+    public static MockableCallAdapterFactory getInstance(Context context, NetworkSimulator networkSimulator, boolean isOffItTurnedOn) {
+        if (sInstance == null || sInstance.isOffItTurnedOn() != isOffItTurnedOn || sInstance.getSimulator() != networkSimulator) {
+            sInstance = new MockableCallAdapterFactory(context, networkSimulator, isOffItTurnedOn);
         }
 
         return sInstance;
     }
 
-    private MockableCallAdapterFactory(Context context, boolean isOffItTurnedOn) {
+    private MockableCallAdapterFactory(Context context, NetworkSimulator networkSimulator, boolean isOffItTurnedOn) {
         this.isOffItTurnedOn = isOffItTurnedOn;
         this.context = context;
+        this.networkSimulator = networkSimulator;
     }
 
-    public boolean isOffItTurnedOn() {
+    private NetworkSimulator getSimulator() {
+        return networkSimulator;
+    }
+
+    private boolean isOffItTurnedOn() {
         return isOffItTurnedOn;
     }
 
@@ -75,7 +81,7 @@ class MockableCallAdapterFactory extends CallAdapter.Factory {
             @Override
             public Call<?> adapt(Call<Object> call) {
                 if (isOffItTurnedOn && getMockableAnnotations() != null && getMockableAnnotations().length > 0) {
-                    return new MockedCall<>(type, call, context, getMockableAnnotations());
+                    return new MockedCall<>(type, call, context, getMockableAnnotations(), networkSimulator);
                 }
 
                 return new ExecutorCallbackCall<>(retrofit.callbackExecutor(), call);

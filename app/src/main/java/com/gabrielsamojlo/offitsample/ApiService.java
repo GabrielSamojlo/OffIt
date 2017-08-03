@@ -16,8 +16,8 @@ public interface ApiService {
 
     @GET("/posts")
     @Mockables({
-            @Mockable(tag = "success", responseCode = 200, jsonPath = "get_posts.json", responseTime = 3500),
-            @Mockable(tag = "no_posts", responseCode = 422, jsonPath = "get_posts_error.json", responseTime = 4500)})
+            @Mockable(tag = "success", responseCode = 200, jsonPath = "get_posts.json", responseTime = 350),
+            @Mockable(tag = "no_posts", responseCode = 422, jsonPath = "get_posts_error.json", responseTime = 450)})
     Call<List<Post>> getPosts();
 
 

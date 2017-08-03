@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.util.Random;
 
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -20,8 +21,8 @@ import retrofit2.Response;
 class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
 
     private Type type;
-
     private Context context;
+    private NetworkSimulator networkSimulator;
 
     private Mockable[] mockableAnnotations;
     private Mockable selectedAnnotation;
@@ -33,16 +34,22 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
     private int responseCode = 200;
     private int responseTime = 0;
 
-    MockedCall(Type type, Call<T> call, Context context, Mockable[] mockableAnnotations) {
+    MockedCall(Type type, Call<T> call, Context context, Mockable[] mockableAnnotations, NetworkSimulator networkSimulator) {
         this.type = type;
         this.context = context;
         this.call = call;
         this.mockableAnnotations = mockableAnnotations;
+        this.networkSimulator = networkSimulator;
         this.instance = this;
 
         // getting default values to be sure when no tag is specified
         selectedAnnotation = getDefaultAnnotation();
         setupValuesFromAnnotation();
+
+        // informing if network simulator is set but only one annotation is present
+        if (networkSimulator != null && mockableAnnotations.length == 1) {
+            Log.e("OffIt", "Network simulator is turned on but only one annotation is present. Are you sure you want to simulate network?");
+        }
     }
 
     private Mockable getDefaultAnnotation() {
@@ -51,6 +58,28 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
         }
 
         else throw new NullPointerException("Mockable or Mockables annotation not found! (null or empty list)");
+    }
+
+    private Mockable getSuccessMockable() {
+        for (Mockable mockable : mockableAnnotations) {
+            if (mockable.responseCode() >= 200 && mockable.responseCode() < 300) {
+                return mockable;
+            }
+        }
+
+        Log.e("OffIt", "Annotation with success callback was not found, using default one");
+        return getDefaultAnnotation();
+    }
+
+    private Mockable getErrorMockable() {
+        for (Mockable mockable : mockableAnnotations) {
+            if (mockable.responseCode() >= 300) {
+                return mockable;
+            }
+        }
+
+        Log.e("OffIt", "Annotation with error callback was not found, using default one");
+        return getDefaultAnnotation();
     }
 
     private Mockable getAnnotationByTag(String tag) {
@@ -122,6 +151,24 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
 
     @Override
     public void enqueue(final Callback callback) {
+        if (networkSimulator != null) {
+            double successRandom = new Random().nextDouble();
+
+            if (successRandom < networkSimulator.getSuccessChance()) {
+                selectedAnnotation = getSuccessMockable();
+            } else {
+                double failureRandom = new Random().nextDouble();
+                if (failureRandom < networkSimulator.getErrorToFailureRatio()) {
+                    callback.onFailure(instance, networkSimulator.getDefaultFailureThrowable());
+                    return;
+                } else {
+                    selectedAnnotation = getErrorMockable();
+                    setupValuesFromAnnotation();
+                }
+
+            }
+        }
+
         final String json = instance.loadJSONFromAsset(pathToJson);
         final Gson gson = new Gson();
 

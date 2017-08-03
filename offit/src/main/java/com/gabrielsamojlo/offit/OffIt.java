@@ -10,10 +10,11 @@ import retrofit2.Retrofit;
 
 public class OffIt {
 
-   public static class Builder {
+    public static class Builder {
         private Retrofit.Builder retrofit;
         private Context context;
         private boolean isEnabled;
+        private NetworkSimulator networkSimulator;
 
         Builder(Context context) {
             this.context = context;
@@ -30,8 +31,18 @@ public class OffIt {
             return this;
         }
 
+        public Builder withNetworkSimulator(NetworkSimulator simulator) {
+            this.networkSimulator = simulator;
+            return this;
+        }
+
+        public Builder withNetworkSimulator() {
+            this.networkSimulator = new DefaultNetworkSimulator();
+            return this;
+        }
+
         private Retrofit getModifiedRetrofit(boolean isEnabled) {
-            retrofit.addCallAdapterFactory(MockableCallAdapterFactory.getInstance(context, isEnabled));
+            retrofit.addCallAdapterFactory(MockableCallAdapterFactory.getInstance(context, networkSimulator, isEnabled));
 
             return retrofit.build();
         }

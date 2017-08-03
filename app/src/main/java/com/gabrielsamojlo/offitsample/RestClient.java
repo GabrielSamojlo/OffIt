@@ -16,7 +16,7 @@ public class RestClient {
     }
 
     private static ApiService getApiService(Context context, boolean isMocked) {
-        return OffIt.withContext(context).withRetrofitBuilder(getRetrofitBuilder()).build(isMocked).create(ApiService.class);
+        return OffIt.withContext(context).withRetrofitBuilder(getRetrofitBuilder()).withNetworkSimulator().build(isMocked).create(ApiService.class);
     }
 
     public static ApiService getRealApiService(Context context) {
