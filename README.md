@@ -42,19 +42,22 @@ Retrofit.Builder retrofitBuilder = new Retrofit.Builder()
 
 ### Mocking
 
-OffIt gives you two ways of mocking your responses. The simplest one is just annotating your API Interface:
+OffIt gives you two ways of mocking your responses. The simple one is just annotating your API Interface without modifying rest of your codebase. The second, more powerful, is using modified classes. In this scenario, changes in your code are necessarily.
+
+#### Basic Mocking ####
+
+Basic mocking is really simple. You need to use ```@Mockable``` annotation to tell OffIt how you want to mock your call :
 
 ```java
 @GET("/posts/{id}")
 @Mockable(responseCode = 200, jsonPath = "get_post.json", responseTime = 1000)
 Call<Post> getPost(@Path("id") int postId);
 ```
+That's it. After enabling OffIt, your call will be mocked with data passed to the annotation. And it will behave like the real one!
 
-That's it. When you enable OffIt by passing true parameter to .build() function your Call will be mocked with data passed to the annotation.
+#### Advanced Mocking ####
 
-__Note: all your *.json files should be placed in assets folder!__
-
-Other way, more powerful, to mock things up is by using modified ```Call``` and ```CallBack``` classes. 
+Advanced, more powerful, way to mock things up is by using modified ```Call``` and ```CallBack``` classes. 
 Together with ```@Mockables``` annotation it gives you ability to use tags so you can mock many case scenarios.
 
 ```java
@@ -82,7 +85,7 @@ com.gabrielsamojlo.offit.Call<List<Post>> call = mApiService.getPost().withTag("
         });
 ```
 
-In addition, using this method you can easily configure parameters of your mocked call from Java code like this :
+In addition, using this method you can easily configure parameters of your mocked call from Java code :
 
 ```java
         com.gabrielsamojlo.offit.Call<List<Post>> call = mApiService.getPosts()
@@ -91,6 +94,8 @@ In addition, using this method you can easily configure parameters of your mocke
 ```
 
 Of course you can get rid of those ```com.gabrielsamojlo.offit``` prefixes by removing imports to original Retrofit classes.
+
+__Note: all your *.json files should be placed in assets folder!__
 
 ### Roadmap
 
