@@ -1,7 +1,7 @@
 package com.gabrielsamojlo.offitsample;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.gabrielsamojlo.offit.Call;
@@ -9,7 +9,6 @@ import com.gabrielsamojlo.offit.Callback;
 
 import java.io.IOException;
 import java.util.List;
-
 
 import retrofit2.Response;
 
@@ -29,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
                 Log.e("responseCode", String.valueOf(response.code()));
                 Log.e("isSuccessfull", String.valueOf(response.isSuccessful()));
-
                 if (response.isSuccessful()) {
                     Log.e("size", String.valueOf(response.body().size()));
                 } else {

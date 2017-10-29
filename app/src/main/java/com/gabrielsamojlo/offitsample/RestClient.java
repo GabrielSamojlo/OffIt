@@ -1,16 +1,32 @@
 package com.gabrielsamojlo.offitsample;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.gabrielsamojlo.offit.OffIt;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RestClient {
 
     private static Retrofit.Builder getRetrofitBuilder() {
+        HttpLoggingInterceptor logger = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            @Override
+            public void log(@NonNull String s) {
+                Log.d("Http", s);
+            }
+        });
+
+        logger.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient client = new OkHttpClient.Builder().addInterceptor(logger).build();
+
         return new Retrofit.Builder()
+                .client(client)
                 .baseUrl("http://jsonplaceholder.typicode.com/")
                 .addConverterFactory(GsonConverterFactory.create());
     }

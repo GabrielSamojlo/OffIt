@@ -1,4 +1,4 @@
-package com.gabrielsamojlo.offit;
+package com.gabrielsamojlo.offit.annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -8,8 +8,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target(METHOD)
 @Retention(RUNTIME)
-public @interface Mockables {
+public @interface Mockable {
 
-    Mockable[] value();
+    String jsonPath() default "";
+    String tag() default "";
+    int responseCode() default 0;
+    int responseTime() default 0;
 
 }

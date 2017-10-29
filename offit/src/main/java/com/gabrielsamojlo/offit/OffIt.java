@@ -4,14 +4,10 @@ import android.content.Context;
 
 import retrofit2.Retrofit;
 
-/**
- * Created by gabrielsamojlo on 20.07.2017.
- */
-
 public class OffIt {
 
    public static class Builder {
-        private Retrofit.Builder retrofit;
+        private Retrofit.Builder retrofitBuilder;
         private Context context;
         private boolean isEnabled;
 
@@ -22,18 +18,23 @@ public class OffIt {
 
         public Retrofit build(boolean isEnabled) {
             this.isEnabled = isEnabled;
+
             return getModifiedRetrofit(isEnabled);
         }
 
         public Builder withRetrofitBuilder(Retrofit.Builder retrofit) {
-            this.retrofit = retrofit;
+            this.retrofitBuilder = retrofit;
             return this;
         }
 
         private Retrofit getModifiedRetrofit(boolean isEnabled) {
-            retrofit.addCallAdapterFactory(MockableCallAdapterFactory.getInstance(context, isEnabled));
+            MockableCallAdapterFactory factory = MockableCallAdapterFactory.getInstance(context, isEnabled);
+            retrofitBuilder.addCallAdapterFactory(factory);
 
-            return retrofit.build();
+            Retrofit retrofit = retrofitBuilder.build();
+            factory.setFactory(retrofit.callFactory());
+
+            return retrofit;
         }
 
     }

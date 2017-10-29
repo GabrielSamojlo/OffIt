@@ -1,9 +1,8 @@
 package com.gabrielsamojlo.offitsample;
 
 import com.gabrielsamojlo.offit.Call;
-import com.gabrielsamojlo.offit.Mockable;
-import com.gabrielsamojlo.offit.Mockables;
-
+import com.gabrielsamojlo.offit.annotations.Mockable;
+import com.gabrielsamojlo.offit.annotations.Mockables;
 
 import java.util.List;
 

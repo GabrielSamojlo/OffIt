@@ -1,18 +1,26 @@
 package com.gabrielsamojlo.offit;
 
 import android.content.Context;
-import android.os.Handler;
+import android.os.AsyncTask;
 import android.util.Log;
 
+import com.gabrielsamojlo.offit.annotations.Mockable;
+import com.gabrielsamojlo.offit.interceptors.OffItInterceptor;
+import com.gabrielsamojlo.offit.utils.ChainAsyncTask;
 import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
+import okhttp3.Interceptor;
 import okhttp3.MediaType;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
+import okhttp3.internal.http.RealInterceptorChain;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -33,12 +41,15 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
     private int responseCode = 200;
     private int responseTime = 0;
 
-    MockedCall(Type type, Call<T> call, Context context, Mockable[] mockableAnnotations) {
+    private List<Interceptor> interceptors;
+
+    MockedCall(Type type, Call<T> call, Context context, Mockable[] mockableAnnotations, List<Interceptor> interceptors) {
         this.type = type;
         this.context = context;
         this.call = call;
         this.mockableAnnotations = mockableAnnotations;
         this.instance = this;
+        this.interceptors = new ArrayList<>(interceptors);
 
         // getting default values to be sure when no tag is specified
         selectedAnnotation = getDefaultAnnotation();
@@ -124,17 +135,28 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
     public void enqueue(final Callback callback) {
         final String json = instance.loadJSONFromAsset(pathToJson);
         final Gson gson = new Gson();
+        interceptors.add(new OffItInterceptor(call, json, responseCode, responseTime));
 
-        new Handler().postDelayed(new Runnable() {
+        Interceptor.Chain chain = new RealInterceptorChain(interceptors, null, null, null, 0, call.request());
+
+        ChainAsyncTask.OnChainProceededListener listener = new ChainAsyncTask.OnChainProceededListener() {
             @Override
-            public void run() {
-                if (responseCode >= 200 && responseCode < 300) {
-                    callback.onResponse(instance, Response.success(gson.fromJson(json, type)));
+            public void onResponseReceived(okhttp3.Response response) {
+                if (response == null) {
+                    Log.e("OffIt", "Response from chain is null. Something wrong happened when proceeding. Please contact author.");
+                    throw new NullPointerException("Response from chain == null. Please contact author to resolve this issue.");
+                }
+
+                if (response.isSuccessful()) {
+                    callback.onResponse(instance, Response.success(gson.fromJson(json, type), response));
                 } else {
-                    callback.onResponse(instance, Response.error(responseCode, ResponseBody.create(MediaType.parse("application/json"), json)));
+                    callback.onResponse(instance, Response.error(ResponseBody.create(MediaType.parse("application/json"), json), response));
                 }
             }
-        }, responseTime);
+        };
+
+        ChainAsyncTask chainAsyncTask = new ChainAsyncTask(call.request(), chain, listener);
+        chainAsyncTask.execute();
     }
 
     @Override
@@ -155,12 +177,12 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
     @SuppressWarnings("CloneDoesntCallSuperClone")
     @Override
     public Call<T> clone() {
-        return null;
+        return call.clone();
     }
 
     @Override
     public Request request() {
-        return null;
+        return call.request();
     }
 
 }
