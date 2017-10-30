@@ -13,7 +13,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RestClient {
 
-    private static Retrofit.Builder getRetrofitBuilder() {
+    private static Retrofit getRetrofit() {
         HttpLoggingInterceptor logger = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
             @Override
             public void log(@NonNull String s) {
@@ -28,11 +28,12 @@ public class RestClient {
         return new Retrofit.Builder()
                 .client(client)
                 .baseUrl("http://jsonplaceholder.typicode.com/")
-                .addConverterFactory(GsonConverterFactory.create());
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
     }
 
     private static ApiService getApiService(Context context, boolean isMocked) {
-        return OffIt.withContext(context).withRetrofitBuilder(getRetrofitBuilder()).build(isMocked).create(ApiService.class);
+        return OffIt.withContext(context).withRetrofit(getRetrofit()).build(isMocked).create(ApiService.class);
     }
 
     public static ApiService getRealApiService(Context context) {
