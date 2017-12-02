@@ -26,18 +26,19 @@ You are ready to go!
 
 ### Configuration
 
-First of all, you need to pass your ```RetrofitBuilder``` instance to Offit. Its really simple:
+First of all, you need to pass your ```Retrofit``` instance to Offit. Its really simple:
 
 ```java
- OffIt.withContext(context).withRetrofitBuilder(retrofitBuilder).build(isMocked).create(ApiService.class);
+ OffIt.withContext(context).withRetrofit(retrofit).build(isMocked).create(ApiService.class);
 ```
 
-where ```RetrofitBuilder``` is your good, old ```Retrofit``` you are using everyday :
+where ```retrofit``` is your good, old ```Retrofit``` you are using everyday :
 
 ```java
-Retrofit.Builder retrofitBuilder = new Retrofit.Builder()
+Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://jsonplaceholder.typicode.com/")
-                .addConverterFactory(GsonConverterFactory.create());
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 ```
 
 ### Mocking

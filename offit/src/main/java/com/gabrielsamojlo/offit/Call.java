@@ -1,8 +1,6 @@
 package com.gabrielsamojlo.offit;
 
-public interface Call<T> extends retrofit2.Call<T> {
+// Class now used only for easier integration when replacing all retrofit.Call with com.gabrielsamojlo.offit.Call
+public interface Call<T> extends MockableCall<T> {
 
-    Call<T> withResponseTime(int responseTimeInMillis);
-    Call<T> withResponseCode(int responseCode);
-    Call<T> withTag(String tag);
 }

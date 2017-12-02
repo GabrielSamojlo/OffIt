@@ -2,6 +2,7 @@ package com.gabrielsamojlo.offit;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.gabrielsamojlo.offit.annotations.Mockable;
@@ -132,7 +133,7 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
     }
 
     @Override
-    public void enqueue(final Callback callback) {
+    public void enqueue(@NonNull final Callback callback) {
         final String json = instance.loadJSONFromAsset(pathToJson);
         final Gson gson = new Gson();
         interceptors.add(new OffItInterceptor(call, json, responseCode, responseTime));
@@ -161,17 +162,17 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
 
     @Override
     public boolean isExecuted() {
-        return false;
+        return call.isExecuted();
     }
 
     @Override
     public void cancel() {
-
+        call.cancel();
     }
 
     @Override
     public boolean isCanceled() {
-        return false;
+        return call.isCanceled();
     }
 
     @SuppressWarnings("CloneDoesntCallSuperClone")
