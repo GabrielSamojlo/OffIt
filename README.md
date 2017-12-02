@@ -43,9 +43,16 @@ Retrofit retrofit = new Retrofit.Builder()
 
 ### Mocking
 
-OffIt gives you two ways of mocking your responses. The simple one is just annotating your API Interface without modifying rest of your codebase. The second, more powerful, is using modified classes. In this scenario, changes in your code are necessarily.
+OffIt gives you three ways of mocking your responses:
 
-#### Basic Mocking ####
+* The simple one is just annotating your API Interface without modifying rest of your codebase.
+
+* The second, more powerful, is using modified classes. In this scenario, changes in your code are necessarily.
+
+* The third one is additional method based on casting your original Call to MockableCall
+
+
+#### First way: Basic Mocking ####
 
 Basic mocking is really simple. You need to use ```@Mockable``` annotation to tell OffIt how you want to mock your call :
 
@@ -56,7 +63,7 @@ Call<Post> getPost(@Path("id") int postId);
 ```
 That's it. After enabling OffIt, your call will be mocked with data passed to the annotation. And it will behave like the real one!
 
-#### Advanced Mocking ####
+#### Second way: Advanced Mocking with custom Call class ####
 
 Advanced, more powerful, way to mock things up is by using modified ```Call``` and ```CallBack``` classes. 
 Together with ```@Mockables``` annotation it gives you ability to use tags so you can mock many case scenarios.
@@ -64,8 +71,8 @@ Together with ```@Mockables``` annotation it gives you ability to use tags so yo
 ```java
 @GET("/posts/{id}")
 @Mockables({
-            @Mockable(tag = "success", responseCode = 200, jsonPath = "get_post.json", responseTime = 3500),
-            @Mockable(tag = "no_post", responseCode = 422, jsonPath = "get_post_error.json", responseTime = 4500)})
+    @Mockable(tag = "success", responseCode = 200, jsonPath = "get_post.json", responseTime = 3500),
+    @Mockable(tag = "no_post", responseCode = 422, jsonPath = "get_post_error.json", responseTime = 4500)})
 com.gabrielsamojlo.offit.Call<Post> getPost(@Path("id") int postId);
 ```
 
@@ -73,28 +80,57 @@ After that, in your Java code you can execute one of your tagged mockable:
 
 ```java
 com.gabrielsamojlo.offit.Call<List<Post>> call = mApiService.getPost().withTag("no_post");
-        call.enqueue(new com.gabrielsamojlo.offit.Callback<List<Post>>() {
-            @Override
-            public void onResponse(com.gabrielsamojlo.offit.Call<List<Post>> call, Response<List<Post>> response) {
-                // Your code
-            }
+call.enqueue(new com.gabrielsamojlo.offit.Callback<List<Post>>() {
+    @Override
+    public void onResponse(com.gabrielsamojlo.offit.Call<List<Post>> call, Response<List<Post>> response) {
+        // Your code
+    }
 
-            @Override
-            public void onFailure(com.gabrielsamojlo.offit.Call<List<Post>> call, Throwable t) {
-                // Your code
-            }
-        });
+    @Override
+    public void onFailure(com.gabrielsamojlo.offit.Call<List<Post>> call, Throwable t) {
+        // Your code
+    }
+});
 ```
 
 In addition, using this method you can easily configure parameters of your mocked call from Java code :
 
 ```java
-        com.gabrielsamojlo.offit.Call<List<Post>> call = mApiService.getPosts()
+com.gabrielsamojlo.offit.Call<List<Post>> call = mApiService.getPosts()
                 .withResponseTime(100)
                 .withResponseCode(404);
 ```
 
 Of course you can get rid of those ```com.gabrielsamojlo.offit``` prefixes by removing imports to original Retrofit classes.
+
+### Third way: Advanced Mocking with casting
+
+This approach is combination of two previous ones. You will have to annotate your API Service but this time, you can leave *original retroft Call* as return type:
+
+```java
+@GET("/posts/{id}")
+@Mockables({
+    @Mockable(tag = "success", responseCode = 200, jsonPath = "get_post.json", responseTime = 3500),
+    @Mockable(tag = "no_post", responseCode = 422, jsonPath = "get_post_error.json", responseTime = 4500)})
+Call<Post> getPost(@Path("id") int postId);
+```
+
+Now, when you are about to enqueue your call (and you want to use some of OffIt custom methods) you have to cast original Retrofit Call to MockableCall. Just like this:
+
+```java
+Call<List<Post>> call = mApiService.getPosts();
+((MockableCall<List<Post>>) call).withResponseCode(200).withResponseTime(1000).enqueue(new Callback<List<Post>>() {
+    @Override
+    public void onResponse(@NonNull Call<List<Post>> call, @NonNull Response<List<Post>> response) {
+        // Your stuff here
+    }
+
+    @Override
+    public void onFailure(@NonNull retrofit2.Call<List<Post>> call, @NonNull Throwable t) {
+        // Your stuff here
+    }
+});
+```
 
 __Note: all your *.json files should be placed in assets folder!__
 
