@@ -17,7 +17,7 @@ Simple add OffIt as a dependency in your app level ```build.gradle``` file.
 
 ```gradle
 dependencies {
-    compile 'com.gabrielsamojlo.offit:offit:1.0-beta2'
+    compile 'com.gabrielsamojlo.offit:offit:1.0.0-rc'
 }
 
 ```
