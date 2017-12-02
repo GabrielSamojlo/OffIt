@@ -17,7 +17,7 @@ Simple add OffIt as a dependency in your app level ```build.gradle``` file.
 
 ```gradle
 dependencies {
-    compile 'com.gabrielsamojlo.offit:offit:1.0-beta'
+    compile 'com.gabrielsamojlo.offit:offit:1.0-beta2'
 }
 
 ```
@@ -103,7 +103,7 @@ com.gabrielsamojlo.offit.Call<List<Post>> call = mApiService.getPosts()
 
 Of course you can get rid of those ```com.gabrielsamojlo.offit``` prefixes by removing imports to original Retrofit classes.
 
-### Third way: Advanced Mocking with casting
+#### Third way: Advanced Mocking with casting
 
 This approach is combination of two previous ones. You will have to annotate your API Service but this time, you can leave *original retroft Call* as return type:
 
