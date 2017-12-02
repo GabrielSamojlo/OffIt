@@ -1,6 +1,6 @@
 package com.gabrielsamojlo.offit.utils;
 
-import android.content.Context;
+import android.content.res.AssetManager;
 import android.util.Log;
 
 import com.gabrielsamojlo.offit.annotations.Mockable;
@@ -20,10 +20,10 @@ import retrofit2.Response;
 
 public class CallUtils {
 
-    public static String getJsonFromAssetsPath(Context context, String fileName) {
+    public static String getJsonFromAssetsPath(AssetManager assetManager, String fileName) {
         String json;
         try {
-            InputStream is = context.getAssets().open(fileName);
+            InputStream is = assetManager.open(fileName);
 
             int size = is.available();
             byte[] buffer = new byte[size];
@@ -45,9 +45,8 @@ public class CallUtils {
     public static Mockable getDefaultAnnotation(Mockable[] annotations) {
         if (annotations != null && annotations.length > 0) {
             return annotations[0];
-        }
-
-        else throw new NullPointerException("Mockable or Mockables annotation not found! (null or empty list)");
+        } else
+            throw new NullPointerException("Mockable or Mockables annotation not found! (null or empty list)");
     }
 
     public static Mockable getAnnotationByTag(String tag, Mockable[] annotations) {

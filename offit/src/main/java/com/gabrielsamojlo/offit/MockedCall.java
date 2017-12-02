@@ -1,6 +1,6 @@
 package com.gabrielsamojlo.offit;
 
-import android.content.Context;
+import android.content.res.AssetManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -25,7 +25,7 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
 
     private Type type;
 
-    private Context context;
+    private AssetManager assetManager;
 
     private Mockable[] mockableAnnotations;
     private Mockable selectedAnnotation;
@@ -37,9 +37,9 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
 
     private List<Interceptor> interceptors;
 
-    MockedCall(Type type, Call<T> call, Context context, Mockable[] mockableAnnotations, List<Interceptor> interceptors) {
+    MockedCall(Type type, Call<T> call, AssetManager assetManager, Mockable[] mockableAnnotations, List<Interceptor> interceptors) {
         this.type = type;
-        this.context = context;
+        this.assetManager = assetManager;
         this.call = call;
         this.mockableAnnotations = mockableAnnotations;
         this.interceptors = new ArrayList<>(interceptors);
@@ -78,7 +78,7 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
     @SuppressWarnings("unchecked")
     @Override
     public Response execute() throws IOException {
-        final String json = CallUtils.getJsonFromAssetsPath(context, pathToJson);
+        final String json = CallUtils.getJsonFromAssetsPath(assetManager, pathToJson);
         interceptors.add(new OffItInterceptor(call, json, responseCode, responseTime));
 
         Interceptor.Chain chain = new RealInterceptorChain(interceptors, null, null, null, 0, call.request());
@@ -96,7 +96,7 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
 
     @Override
     public void enqueue(@NonNull final Callback callback) {
-        final String json = CallUtils.getJsonFromAssetsPath(context, pathToJson);
+        final String json = CallUtils.getJsonFromAssetsPath(assetManager, pathToJson);
         interceptors.add(new OffItInterceptor(call, json, responseCode, responseTime));
 
         Interceptor.Chain chain = new RealInterceptorChain(interceptors, null, null, null, 0, call.request());

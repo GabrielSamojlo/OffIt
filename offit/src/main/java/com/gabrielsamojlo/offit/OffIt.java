@@ -6,7 +6,7 @@ import retrofit2.Retrofit;
 
 public class OffIt {
 
-   public static class Builder {
+    public static class Builder {
         private Retrofit.Builder retrofitBuilder;
         private Context context;
         private Retrofit retrofit;

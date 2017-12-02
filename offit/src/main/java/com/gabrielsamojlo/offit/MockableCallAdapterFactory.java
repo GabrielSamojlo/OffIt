@@ -1,6 +1,8 @@
 package com.gabrielsamojlo.offit;
 
 import android.content.Context;
+import android.content.res.AssetManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.gabrielsamojlo.offit.annotations.Mockable;
@@ -23,7 +25,7 @@ class MockableCallAdapterFactory extends CallAdapter.Factory {
 
     private static MockableCallAdapterFactory sInstance;
     private boolean isOffItTurnedOn;
-    private Context context;
+    private AssetManager assetManager;
     private List<Interceptor> interceptors;
 
     public static MockableCallAdapterFactory getInstance(Context context, boolean isOffItTurnedOn) {
@@ -36,7 +38,7 @@ class MockableCallAdapterFactory extends CallAdapter.Factory {
 
     private MockableCallAdapterFactory(Context context, boolean isOffItTurnedOn) {
         this.isOffItTurnedOn = isOffItTurnedOn;
-        this.context = context;
+        this.assetManager = context.getAssets();
     }
 
     private boolean isOffItTurnedOn() {
@@ -51,7 +53,7 @@ class MockableCallAdapterFactory extends CallAdapter.Factory {
 
     @Nullable
     @Override
-    public CallAdapter<?, ?> get(final Type returnType, final Annotation[] annotations, final Retrofit retrofit) {
+    public CallAdapter<?, ?> get(@NonNull final Type returnType, @NonNull final Annotation[] annotations, @NonNull final Retrofit retrofit) {
         return new CallAdapter<Object, Call<?>>() {
 
             private Type type;
@@ -65,7 +67,7 @@ class MockableCallAdapterFactory extends CallAdapter.Factory {
 
                 for (Annotation annotation : annotations) {
                     if (annotation instanceof Mockable) {
-                        return new Mockable[] {(Mockable) annotation};
+                        return new Mockable[]{(Mockable) annotation};
                     }
                 }
 
@@ -86,9 +88,9 @@ class MockableCallAdapterFactory extends CallAdapter.Factory {
             }
 
             @Override
-            public Call<?> adapt(Call<Object> call) {
+            public Call<?> adapt(@NonNull Call<Object> call) {
                 if (isOffItTurnedOn && getMockableAnnotations() != null && getMockableAnnotations().length > 0) {
-                    return new MockedCall<>(type, call, context, getMockableAnnotations(), interceptors);
+                    return new MockedCall<>(type, call, assetManager, getMockableAnnotations(), interceptors);
                 }
 
                 return new ExecutorCallbackCall<>(retrofit.callbackExecutor(), call);

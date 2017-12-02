@@ -11,8 +11,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface Mockable {
 
     String jsonPath() default "";
+
     String tag() default "";
+
     int responseCode() default 0;
+
     int responseTime() default 0;
 
 }
