@@ -132,18 +132,13 @@ Call<List<Post>> call = mApiService.getPosts();
 });
 ```
 
-__Note: all your *.json files should be placed in assets folder!__
-
 ### Roadmap
 
 Please keep in mind that OffIt is in beta version. There are some tweaks on the roadmap, so be ready for fixes, tweaks and new features.
 Some of the planned features are listed here with progress on them. Feel free to suggest improvements!
 
 - [ ] (80%) Network simulator
-- [ ] (10%) Logging interceptor support
-- [ ] Customizable jsons paths
 - [ ] Headers support
-- [ ] Easier integration
 
 ### Support, contact and contribution
 
