@@ -1,5 +1,7 @@
 package com.gabrielsamojlo.offit.interceptors;
 
+import android.support.annotation.NonNull;
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -24,7 +26,8 @@ public class OffItInterceptor implements Interceptor {
     }
 
     @Override
-    public Response intercept(Chain chain) throws IOException {
+    public Response intercept(@NonNull Chain chain) throws IOException {
+
         try {
             Thread.sleep(responseTime);
         } catch (InterruptedException e) {

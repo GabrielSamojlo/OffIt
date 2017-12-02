@@ -1,26 +1,21 @@
 package com.gabrielsamojlo.offit;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.gabrielsamojlo.offit.annotations.Mockable;
 import com.gabrielsamojlo.offit.interceptors.OffItInterceptor;
+import com.gabrielsamojlo.offit.utils.CallUtils;
 import com.gabrielsamojlo.offit.utils.ChainAsyncTask;
-import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Interceptor;
-import okhttp3.MediaType;
-import okhttp3.Protocol;
 import okhttp3.Request;
-import okhttp3.ResponseBody;
 import okhttp3.internal.http.RealInterceptorChain;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,8 +29,6 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
 
     private Mockable[] mockableAnnotations;
     private Mockable selectedAnnotation;
-
-    private MockedCall<T> instance;
     private Call<T> call;
 
     private String pathToJson = "";
@@ -49,59 +42,17 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
         this.context = context;
         this.call = call;
         this.mockableAnnotations = mockableAnnotations;
-        this.instance = this;
         this.interceptors = new ArrayList<>(interceptors);
 
         // getting default values to be sure when no tag is specified
-        selectedAnnotation = getDefaultAnnotation();
+        selectedAnnotation = CallUtils.getDefaultAnnotation(mockableAnnotations);
         setupValuesFromAnnotation();
-    }
-
-    private Mockable getDefaultAnnotation() {
-        if (mockableAnnotations != null && mockableAnnotations.length > 0) {
-            return mockableAnnotations[0];
-        }
-
-        else throw new NullPointerException("Mockable or Mockables annotation not found! (null or empty list)");
-    }
-
-    private Mockable getAnnotationByTag(String tag) {
-        for (Mockable mockable : mockableAnnotations) {
-            if (mockable.tag().equals(tag)) {
-                return mockable;
-            }
-        }
-
-        Log.e("OffIt", "Annotation with tag " + tag + " was not found, using default one");
-        return getDefaultAnnotation();
     }
 
     private void setupValuesFromAnnotation() {
         pathToJson = selectedAnnotation.jsonPath();
         responseCode = selectedAnnotation.responseCode();
         responseTime = selectedAnnotation.responseTime();
-    }
-
-    private String loadJSONFromAsset(String fileName) {
-        String json;
-        try {
-            InputStream is = context.getAssets().open(fileName);
-
-            int size = is.available();
-            byte[] buffer = new byte[size];
-
-            is.read(buffer);
-            is.close();
-
-            json = new String(buffer, "UTF-8");
-
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-
-        return json;
     }
 
     @Override
@@ -118,29 +69,39 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
 
     @Override
     public com.gabrielsamojlo.offit.Call<T> withTag(String tag) {
-        selectedAnnotation = getAnnotationByTag(tag);
+        selectedAnnotation = CallUtils.getAnnotationByTag(tag, mockableAnnotations);
         setupValuesFromAnnotation();
 
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Response execute() throws IOException {
-        Gson gson = new Gson();
-        final String json = instance.loadJSONFromAsset(pathToJson);
+        final String json = CallUtils.getJsonFromAssetsPath(context, pathToJson);
+        interceptors.add(new OffItInterceptor(call, json, responseCode, responseTime));
 
-        return Response.success(gson.fromJson(json, type));
+        Interceptor.Chain chain = new RealInterceptorChain(interceptors, null, null, null, 0, call.request());
+        okhttp3.Response response = chain.proceed(call.request());
+
+        Response callResponse;
+        if (response.isSuccessful()) {
+            callResponse = CallUtils.getSuccessResponse(json, type, response);
+        } else {
+            callResponse = CallUtils.getErrorResponse(json, response);
+        }
+
+        return callResponse;
     }
 
     @Override
     public void enqueue(@NonNull final Callback callback) {
-        final String json = instance.loadJSONFromAsset(pathToJson);
-        final Gson gson = new Gson();
+        final String json = CallUtils.getJsonFromAssetsPath(context, pathToJson);
         interceptors.add(new OffItInterceptor(call, json, responseCode, responseTime));
 
         Interceptor.Chain chain = new RealInterceptorChain(interceptors, null, null, null, 0, call.request());
-
         ChainAsyncTask.OnChainProceededListener listener = new ChainAsyncTask.OnChainProceededListener() {
+            @SuppressWarnings("unchecked")
             @Override
             public void onResponseReceived(okhttp3.Response response) {
                 if (response == null) {
@@ -149,9 +110,9 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
                 }
 
                 if (response.isSuccessful()) {
-                    callback.onResponse(instance, Response.success(gson.fromJson(json, type), response));
+                    callback.onResponse(MockedCall.this, CallUtils.getSuccessResponse(json, type, response));
                 } else {
-                    callback.onResponse(instance, Response.error(ResponseBody.create(MediaType.parse("application/json"), json), response));
+                    callback.onResponse(MockedCall.this, CallUtils.getErrorResponse(json, response));
                 }
             }
         };
