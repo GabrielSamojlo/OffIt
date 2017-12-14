@@ -5,18 +5,12 @@ import android.content.res.AssetManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.gabrielsamojlo.offit.annotations.Mockable;
-import com.gabrielsamojlo.offit.annotations.Mockables;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
 import java.util.List;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
-import retrofit2.Call;
 import retrofit2.CallAdapter;
 import retrofit2.Retrofit;
 
@@ -41,7 +35,7 @@ class MockableCallAdapterFactory extends CallAdapter.Factory {
         this.assetManager = context.getAssets();
     }
 
-    private boolean isOffItTurnedOn() {
+    boolean isOffItTurnedOn() {
         return isOffItTurnedOn;
     }
 
@@ -54,47 +48,14 @@ class MockableCallAdapterFactory extends CallAdapter.Factory {
     @Nullable
     @Override
     public CallAdapter<?, ?> get(@NonNull final Type returnType, @NonNull final Annotation[] annotations, @NonNull final Retrofit retrofit) {
-        return new CallAdapter<Object, Call<?>>() {
+        return new MockableCallAdapter<>(returnType, retrofit, annotations, this);
+    }
 
-            private Type type;
+    AssetManager getAssetManager() {
+        return assetManager;
+    }
 
-            private Mockable[] getMockableAnnotations() {
-                for (Annotation annotation : annotations) {
-                    if (annotation instanceof Mockables) {
-                        return ((Mockables) annotation).value();
-                    }
-                }
-
-                for (Annotation annotation : annotations) {
-                    if (annotation instanceof Mockable) {
-                        return new Mockable[]{(Mockable) annotation};
-                    }
-                }
-
-                return new Mockable[0];
-            }
-
-            @Override
-            public Type responseType() {
-                Type[] types = ((ParameterizedType) returnType).getActualTypeArguments();
-                Type paramType = types[0];
-                if (paramType instanceof WildcardType) {
-                    return ((WildcardType) paramType).getUpperBounds()[0];
-                }
-
-                this.type = paramType;
-
-                return paramType;
-            }
-
-            @Override
-            public Call<?> adapt(@NonNull Call<Object> call) {
-                if (isOffItTurnedOn && getMockableAnnotations() != null && getMockableAnnotations().length > 0) {
-                    return new MockedCall<>(type, call, assetManager, getMockableAnnotations(), interceptors);
-                }
-
-                return new ExecutorCallbackCall<>(retrofit.callbackExecutor(), call);
-            }
-        };
+    List<Interceptor> getInterceptors() {
+        return interceptors;
     }
 }

@@ -2,6 +2,12 @@ package com.gabrielsamojlo.offit;
 
 import android.content.Context;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.CallAdapter;
 import retrofit2.Retrofit;
 
 public class OffIt {
@@ -35,7 +41,16 @@ public class OffIt {
         private Retrofit getModifiedRetrofit(boolean isEnabled) {
             MockableCallAdapterFactory factory = MockableCallAdapterFactory.getInstance(context, isEnabled);
 
-            retrofitBuilder.addCallAdapterFactory(factory);
+            List<CallAdapter.Factory> factories = new ArrayList<>();
+            factories.add(factory);
+            factories.addAll(retrofit.callAdapterFactories());
+
+            try {
+                FieldUtils.writeField(retrofitBuilder, "adapterFactories", factories, true);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
             factory.setFactory(retrofit.callFactory());
 
             retrofit = retrofitBuilder.build();

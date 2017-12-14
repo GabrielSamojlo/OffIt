@@ -48,4 +48,9 @@ public class Post implements Serializable {
     public String toString() {
         return "userId " + userId + " id " + id + " title " + title + " body " + body;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Post && (obj.toString().equals(toString()));
+    }
 }
