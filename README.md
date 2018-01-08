@@ -5,7 +5,7 @@
 
 OffIt is simple but powerful mocking library based on Retrofit. 
 
-Do you want to build demo of your app without worries about your backend reliability?
+Do you want to build a demo of your app without worries about your backend reliability?
 Or maybe you want to prototype your app quickly or just don't have any backend yet?
 And what if you just want to quickly mock your Retrofit responses in your tests?
 
@@ -33,7 +33,7 @@ First of all, you need to pass your ```Retrofit``` instance to Offit. Its really
  OffIt.withContext(context).withRetrofit(retrofit).build(isMocked).create(ApiService.class);
 ```
 
-where ```retrofit``` is your good, old ```Retrofit``` you are using everyday :
+where ```retrofit``` is your good, old ```Retrofit``` you are using every day:
 
 ```java
 Retrofit retrofit = new Retrofit.Builder()
@@ -48,7 +48,7 @@ OffIt gives you three ways of mocking your responses:
 
 * The simple one is just annotating your API Interface without modifying rest of your codebase.
 
-* The second, more powerful, is using modified classes. In this scenario, changes in your code are necessarily.
+* The second, more powerful, is using modified classes. In this scenario, changes in your code are necessary.
 
 * The third one is additional method based on casting your original Call to MockableCall
 
@@ -67,7 +67,7 @@ That's it. After enabling OffIt, your call will be mocked with data passed to th
 #### Second way: Advanced Mocking with custom Call class ####
 
 Advanced, more powerful, way to mock things up is by using modified ```Call``` and ```CallBack``` classes. 
-Together with ```@Mockables``` annotation it gives you ability to use tags so you can mock many case scenarios.
+Together with ```@Mockables``` annotation, it gives you the ability to use tags so you can mock many case scenarios.
 
 ```java
 @GET("/posts/{id}")
@@ -102,11 +102,11 @@ com.gabrielsamojlo.offit.Call<List<Post>> call = mApiService.getPosts()
                 .withResponseCode(404);
 ```
 
-Of course you can get rid of those ```com.gabrielsamojlo.offit``` prefixes by removing imports to original Retrofit classes.
+Of course, you can get rid of those ```com.gabrielsamojlo.offit``` prefixes by removing imports to original Retrofit classes.
 
 #### Third way: Advanced Mocking with casting
 
-This approach is combination of two previous ones. You will have to annotate your API Service but this time, you can leave *original retroft Call* as return type:
+This approach is a combination of two previous ones. You will have to annotate your API Service but this time, you can leave *original retrofit Call* as a return type:
 
 ```java
 @GET("/posts/{id}")
@@ -143,7 +143,7 @@ You just simply invoke a `.execute()` method on your calls. If you want to test 
 public TestRule offitRule = new OffitTestRule();
 ```
 
-And.. that's it. Now all your `.enqueue()` methods invoked on calls will be executed on main thread for you so you don't need to worry about asynchronous testing!
+And... that's it. Now all your `.enqueue()` methods invoked on calls will be executed on the main thread for you so don't worry about asynchronous testing!
 
 For more detailed example, please see `OffItIntegrationTests` under `app/src/androidTest/..` in source.
 
