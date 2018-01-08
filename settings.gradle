@@ -1,1 +1,1 @@
-include ':app', ':offit'
+include ':app'
