@@ -4,8 +4,10 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.gabrielsamojlo.offit.Callback;
 import com.gabrielsamojlo.offit.MockableCall;
 import com.gabrielsamojlo.offit.OffIt;
+import com.gabrielsamojlo.offit.runner.OffitTestRule;
 import com.gabrielsamojlo.offit.utils.CallUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -13,7 +15,9 @@ import com.google.gson.reflect.TypeToken;
 import junit.framework.Assert;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Type;
@@ -33,6 +37,9 @@ public class OffItIntegrationTests {
     private ApiService realApiService;
     private Context appContext;
 
+    @Rule
+    public TestRule offitRule = new OffitTestRule();
+
     private List<Post> jsonToPostsList(String json) {
         Type type = new TypeToken<List<Post>>(){}.getType();
         String mockJson = CallUtils.getJsonFromAssetsPath(appContext.getAssets(), json);
@@ -43,6 +50,7 @@ public class OffItIntegrationTests {
     @Before
     public void setUp() {
         appContext = InstrumentationRegistry.getTargetContext();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .addConverterFactory(GsonConverterFactory.create())
                 .baseUrl("http://jsonplaceholder.typicode.com/")
@@ -83,55 +91,95 @@ public class OffItIntegrationTests {
     @Test
     public void offItEnabled_retrofitCallShouldBeMocked() throws Exception {
         Call<List<Post>> call = mockApiService.getPostsWithRetrofitCall();
-        Response<List<Post>> response = call.execute();
+        call.enqueue(new Callback<List<Post>>() {
+            @Override
+            public void onResponse(com.gabrielsamojlo.offit.Call<List<Post>> call, Response<List<Post>> response) {
+                List<Post> responsePosts = response.body();
+                List<Post> mockedPosts = jsonToPostsList("get_posts.json");
 
-        List<Post> responsePosts = response.body();
-        List<Post> mockedPosts = jsonToPostsList("get_posts.json");
+                assertEquals(responsePosts, mockedPosts);
+            }
 
-        assertEquals(responsePosts, mockedPosts);
+            @Override
+            public void onFailure(com.gabrielsamojlo.offit.Call<List<Post>> call, Throwable t) {
+
+            }
+        });
     }
 
     @Test
     public void offItEnabled_customCallShouldBeMocked() throws Exception {
         com.gabrielsamojlo.offit.Call<List<Post>> call = mockApiService.getPostsWithCustomCall();
-        Response<List<Post>> response = call.execute();
+        call.enqueue(new Callback<List<Post>>() {
+            @Override
+            public void onResponse(com.gabrielsamojlo.offit.Call<List<Post>> call, Response<List<Post>> response) {
+                List<Post> posts = response.body();
+                List<Post> mockedPosts = jsonToPostsList("get_posts.json");
 
-        List<Post> posts = response.body();
-        List<Post> mockedPosts = jsonToPostsList("get_posts.json");
+                assertEquals(posts, mockedPosts);
+            }
 
-        assertEquals(posts, mockedPosts);
+            @Override
+            public void onFailure(com.gabrielsamojlo.offit.Call<List<Post>> call, Throwable t) {
+
+            }
+        });
     }
 
     @Test
     public void offItDisabled_retrofitCallShouldBeMocked() throws Exception {
         Call<List<Post>> call = realApiService.getPostsWithRetrofitCall();
-        Response<List<Post>> response = call.execute();
+        call.enqueue(new Callback<List<Post>>() {
+            @Override
+            public void onResponse(com.gabrielsamojlo.offit.Call<List<Post>> call, Response<List<Post>> response) {
+                List<Post> responsePosts = response.body();
+                List<Post> mockedPosts = jsonToPostsList("get_posts.json");
 
-        List<Post> responsePosts = response.body();
-        List<Post> mockedPosts = jsonToPostsList("get_posts.json");
+                assertNotNull(responsePosts);
+                assertNotEquals(responsePosts, mockedPosts);
+            }
 
-        assertNotNull(responsePosts);
-        assertNotEquals(responsePosts, mockedPosts);
+            @Override
+            public void onFailure(com.gabrielsamojlo.offit.Call<List<Post>> call, Throwable t) {
+
+            }
+        });
     }
 
     @Test
     public void offItDisabled_customCallShouldBeMocked() throws Exception {
         com.gabrielsamojlo.offit.Call<List<Post>> call = realApiService.getPostsWithCustomCall();
-        Response<List<Post>> response = call.execute();
+        call.enqueue(new Callback<List<Post>>() {
+            @Override
+            public void onResponse(com.gabrielsamojlo.offit.Call<List<Post>> call, Response<List<Post>> response) {
+                List<Post> posts = response.body();
+                List<Post> mockedPosts = jsonToPostsList("get_posts.json");
 
-        List<Post> posts = response.body();
-        List<Post> mockedPosts = jsonToPostsList("get_posts.json");
+                assertNotNull(posts);
+                assertNotEquals(posts, mockedPosts);
+            }
 
-        assertNotNull(posts);
-        assertNotEquals(posts, mockedPosts);
+            @Override
+            public void onFailure(com.gabrielsamojlo.offit.Call<List<Post>> call, Throwable t) {
+
+            }
+        });
     }
 
     @Test
     public void offItEnabled_withTagMethodShouldReturnProperMessage() throws Exception {
         Call<List<Post>> call = mockApiService.getPostsWithRetrofitCall();
-        Response<List<Post>> response = ((MockableCall<List<Post>>) call).withTag("no_posts").execute();
+        ((MockableCall<List<Post>>) call).withTag("no_posts").enqueue(new Callback<List<Post>>() {
+            @Override
+            public void onResponse(com.gabrielsamojlo.offit.Call<List<Post>> call, Response<List<Post>> response) {
+                Assert.assertEquals(422, response.code());
+            }
 
-        Assert.assertEquals(422, response.code());
+            @Override
+            public void onFailure(com.gabrielsamojlo.offit.Call<List<Post>> call, Throwable t) {
+
+            }
+        });
     }
 
 }

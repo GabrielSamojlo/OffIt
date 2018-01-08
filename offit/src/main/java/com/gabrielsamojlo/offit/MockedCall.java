@@ -6,8 +6,11 @@ import android.util.Log;
 
 import com.gabrielsamojlo.offit.annotations.Mockable;
 import com.gabrielsamojlo.offit.interceptors.OffItInterceptor;
+import com.gabrielsamojlo.offit.interfaces.OnChainProceededListener;
 import com.gabrielsamojlo.offit.utils.CallUtils;
-import com.gabrielsamojlo.offit.utils.ChainAsyncTask;
+import com.gabrielsamojlo.offit.utils.ChainCallbackRunnable;
+import com.gabrielsamojlo.offit.utils.ChainRunner;
+import com.gabrielsamojlo.offit.utils.MockedCallExecutor;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -99,8 +102,8 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
         final String json = CallUtils.getJsonFromAssetsPath(assetManager, pathToJson);
         interceptors.add(new OffItInterceptor(call, json, responseCode, responseTime));
 
-        Interceptor.Chain chain = new RealInterceptorChain(interceptors, null, null, null, 0, call.request());
-        ChainAsyncTask.OnChainProceededListener listener = new ChainAsyncTask.OnChainProceededListener() {
+        final Interceptor.Chain chain = new RealInterceptorChain(interceptors, null, null, null, 0, call.request());
+        final OnChainProceededListener listener = new OnChainProceededListener() {
             @SuppressWarnings("unchecked")
             @Override
             public void onResponseReceived(okhttp3.Response response) {
@@ -117,8 +120,8 @@ class MockedCall<T> implements com.gabrielsamojlo.offit.Call<T> {
             }
         };
 
-        ChainAsyncTask chainAsyncTask = new ChainAsyncTask(call.request(), chain, listener);
-        chainAsyncTask.execute();
+        ChainRunner chainRunner = new ChainRunner(chain, call.request(), new ChainCallbackRunnable(listener));
+        MockedCallExecutor.getInstance().execute(chainRunner);
     }
 
     @Override

@@ -5,8 +5,9 @@
 
 OffIt is simple but powerful mocking library based on Retrofit. 
 
-Do you want to build demo of your app without worries about your backend reliability? 
+Do you want to build demo of your app without worries about your backend reliability?
 Or maybe you want to prototype your app quickly or just don't have any backend yet?
+And what if you just want to quickly mock your Retrofit responses in your tests?
 
 OffIt is for you!
 Make mocks great again.
@@ -132,12 +133,27 @@ Call<List<Post>> call = mApiService.getPosts();
 });
 ```
 
+### OffIt in tests
+
+You can easily use OffIt to mock your API Responses in your tests. If you want to test everything synchronously there is nothing you need to do more than explained in previous steps. 
+You just simply invoke a `.execute()` method on your calls. If you want to test your asynchronous callbacks you will need to add `OffitTestRule` to your tests just like this:
+
+```java
+@Rule
+public TestRule offitRule = new OffitTestRule();
+```
+
+And.. that's it. Now all your `.enqueue()` methods invoked on calls will be executed on main thread for you so you don't need to worry about asynchronous testing!
+
+For more detailed example, please see `OffItIntegrationTests` under `app/src/androidTest/..` in source.
+
+
 ### Roadmap
 
-Please keep in mind that OffIt is in beta version. There are some tweaks on the roadmap, so be ready for fixes, tweaks and new features.
+Please keep in mind that OffIt is still under development. There are some tweaks on the roadmap, so be ready for fixes, tweaks and new features.
 Some of the planned features are listed here with progress on them. Feel free to suggest improvements!
 
-- [ ] (80%) Network simulator
+- [ ] Network simulator
 - [ ] Headers support
 
 ### Support, contact and contribution
@@ -147,7 +163,7 @@ Any forms of contribution are welcome, so feel free to fork and contribute with 
 
 ### License
 ```
-Copyright 2017 Gabriel Samojło
+Copyright 2018 Gabriel Samojło
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

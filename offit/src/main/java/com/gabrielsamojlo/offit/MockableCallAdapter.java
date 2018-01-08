@@ -52,7 +52,8 @@ public class MockableCallAdapter<R> implements CallAdapter<R, Object> {
 
     @Override
     public Type responseType() {
-        if (returnType.equals(Call.class) || returnType.equals(MockableCall.class) || returnType.equals(com.gabrielsamojlo.offit.Call.class)) {
+        Type rawType = ((ParameterizedType) returnType).getRawType();
+        if (rawType.equals(Call.class) || rawType.equals(MockableCall.class) || rawType.equals(com.gabrielsamojlo.offit.Call.class)) {
             Type[] types = ((ParameterizedType) returnType).getActualTypeArguments();
             Type paramType = types[0];
             if (paramType instanceof WildcardType) {
