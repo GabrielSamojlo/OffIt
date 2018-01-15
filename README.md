@@ -1,4 +1,5 @@
 # OffIt 
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-OffIt-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/6688)
 [ ![Download](https://api.bintray.com/packages/gabrielsamojlo/OffIt/OffIt/images/download.svg) ](https://bintray.com/gabrielsamojlo/OffIt/OffIt/_latestVersion)
 
 ### What is this?
